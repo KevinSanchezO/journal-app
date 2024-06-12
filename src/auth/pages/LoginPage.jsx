@@ -1,12 +1,12 @@
 import { useMemo } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { Link as RouterLink } from "react-router-dom" // adds the new name to prevents conflicts
-import { Button, Grid, Link, TextField, Typography } from "@mui/material"
+import { Alert, Button, Grid, Link, TextField, Typography } from "@mui/material"
 import { Google } from "@mui/icons-material"
 
 import { AuthLayout } from "../layout/AuthLayout"
 import { useForm } from "../../hooks"
-import { checkingAuthentication, startGoogleSignIn } from "../../store/auth"
+import { startGoogleSignIn, startLoginWithEmailPassword } from "../../store/auth"
 
 
 /*sx hace referencia style extended, permite trabajar con la propiedad style y accede al tema 
@@ -21,7 +21,7 @@ export const LoginPage = () => {
     const dispatch = useDispatch();
 
     // gives access to the status state in the store, to be more precise in authSlice
-    const { status } = useSelector( state => state.auth );
+    const { status, errorMessage } = useSelector( state => state.auth );
 
     const { email, password, onInputChange, formState } = useForm({
         email: "kevin@google.com",
@@ -39,10 +39,8 @@ export const LoginPage = () => {
     const onSubmit = (event) => {
         event.preventDefault();
 
-        console.log({email, password});
-
         //calls an async function in the thunk
-        dispatch(checkingAuthentication());
+        dispatch(startLoginWithEmailPassword({email, password}));
     }
 
     const onGoogleSignIn = () => {
@@ -79,8 +77,16 @@ export const LoginPage = () => {
             </Grid>
 
             <Grid container spacing={2} sx={{mb:2, mt:1}}>
+              <Grid item xs={ 12 } display={ !!errorMessage ? '' : 'none'}>
+                <Alert severity="error">{errorMessage}</Alert>
+              </Grid>
+
               <Grid item xs={ 12 } sm={ 6 }>
-                <Button variant='contained' fullWidth type="submit" disabled={isAuthenticating}>
+                <Button 
+                    variant='contained' 
+                    fullWidth 
+                    type="submit" 
+                    disabled={isAuthenticating}>
                   Login
                 </Button>
               </Grid>
