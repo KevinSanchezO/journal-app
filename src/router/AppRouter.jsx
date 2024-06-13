@@ -1,41 +1,30 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AuthRoutes } from "../auth/routes/AuthRoutes";
 import { JournalRoutes } from "../journal/routes/JournalRoutes";
-import { useDispatch, useSelector } from "react-redux";
 import { CheckingAuth } from "../ui";
-import { useEffect } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { FirebaseAuth } from "../firebase/config";
-import { login, logout } from "../store/auth";
+import { useCheckAuth } from "../hooks";
 
 export const AppRouter = () => {
-  
-  const { status } = useSelector(state => state.auth);
-  const dispatch = useDispatch();
+    const status = useCheckAuth();
 
-  useEffect( ()=>{
-    onAuthStateChanged(FirebaseAuth, async(user) => {
-        if (!user) return dispatch(logout());
-
-        const {uid, email, displayName, photoURL} = user;
-        dispatch(login({uid, email, displayName, photoURL}));
-    })
-  }, []);
-
-  if (status === 'checking') {
-    return <CheckingAuth />
-  }
+    if (status === 'checking') {
+        return <CheckingAuth />
+    }
   
   return (
     <Routes>
 
+        {/**
+         * if the user is aunthenticated then it will show the routes related to the content
+         * of the page, if the user isn't then the views related to login and register are loaded
+         */}
         {
             (status === 'authenticated') 
             ? <Route path="/*" element={<JournalRoutes/>}/> 
             : <Route path="/auth/*" element={<AuthRoutes/>}/>
         }
 
-        <Route path='*/' element={<Navigate to='/auth/'/>}/>
+        <Route path='/*' element={<Navigate to='/auth/'/>}/>
 
     </Routes>
   )

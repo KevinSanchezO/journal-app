@@ -1,6 +1,7 @@
 import { CircularProgress, Grid } from '@mui/material'
 import React from 'react'
 
+// spinner that appears when the user is logging in
 export const CheckingAuth = () => {
   return (
     <Grid
