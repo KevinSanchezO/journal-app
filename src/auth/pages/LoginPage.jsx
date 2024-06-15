@@ -9,6 +9,11 @@ import { useForm } from "../../hooks"
 import { startGoogleSignIn, startLoginWithEmailPassword } from "../../store/auth"
 
 
+const formData = {
+    email: "kevin@google.com",
+    password: "123456"
+}
+
 /*sx hace referencia style extended, permite trabajar con la propiedad style y accede al tema 
 xs hace referencia a tamaño de pantallas pequeñas, medianas grandes y xxl
 
@@ -23,10 +28,7 @@ export const LoginPage = () => {
     // gives access to the status state in the store, to be more precise in authSlice
     const { status, errorMessage } = useSelector( state => state.auth );
 
-    const { email, password, onInputChange, formState } = useForm({
-        email: "kevin@google.com",
-        password: "123456"
-    })
+    const { email, password, onInputChange, formState } = useForm(formData);
 
     /**
      * 

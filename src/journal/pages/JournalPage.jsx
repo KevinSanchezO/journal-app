@@ -22,7 +22,8 @@ export const JournalPage = () => {
   return (
     <JournalLayout>
 
-      {active ? <NoteView />:<NothingSelectedView/>}
+      {/* transforms the object into a boolean */}
+      {(!!active) ? <NoteView />:<NothingSelectedView/>}
 
       <IconButton
        disabled={ isSaving }
