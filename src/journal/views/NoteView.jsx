@@ -1,22 +1,60 @@
-import { SaveOutlined } from "@mui/icons-material"
-import { Button, Grid, TextField, Typography } from "@mui/material"
-import { ImageGallery } from "../components/ImageGallery"
-import { useForm } from "../../hooks/useForm"
-import { useSelector } from "react-redux"
-import { useMemo } from "react"
+import { SaveOutlined, UploadOutlined } from "@mui/icons-material";
+import { Button, Grid, IconButton, TextField, Typography } from "@mui/material";
+import { ImageGallery } from "../components/ImageGallery";
+import { useForm } from "../../hooks/useForm";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useMemo, useRef } from "react";
+import { setActiveNote } from "../../store/journal/journalSlice";
+import { startSaveNote, startUploadingFiles } from "../../store/journal/thunks";
+import Swal from "sweetalert2";
+import 'sweetalert2/dist/sweetalert2.css';
 
 
 // Un box es como un div, el grid permite jugar con el orden de los elementos
 export const NoteView = () => {
 
-    const {active:note} = useSelector(state => state.journal);
-
+    const dispatch = useDispatch();
+    const {active:note, messageSave, isSaving} = useSelector(state => state.journal);
     const {body, title, onInputChange, formState, date } = useForm( note );
+
+    /**
+     * Everytime the current node is modified the modified text of it will 
+     * render at the same time or once is saved to be more precised.
+     */
+    useEffect(() => {
+        dispatch(setActiveNote(formState));
+    },[formState])
+
+    /**
+     * checks if a note has been saved and shows a message to notify the user
+     */
+    useEffect(() => {
+        if  (messageSave.length > 0 ) {
+            Swal.fire('Nota Actualizada', messageSave, 'success');
+        }  
+    }, [messageSave])
+    
 
     const dateString = useMemo(() => {
         const newDate = new Date(date);
         return newDate.toUTCString();
     }, [date])
+
+    const onSaveNote = () => {
+        dispatch(startSaveNote());
+    }
+
+    /**
+     * simulates a click of the input file so the IconButton is the one that needs to be clicked
+     * in order to load images
+     */
+    const fileInputRef = useRef();
+
+    const onFileInputChange = ({target}) => {
+        if (target.files === 0) return;
+
+        dispatch( startUploadingFiles(target.files) );
+    }
 
     return (
         <Grid 
@@ -29,7 +67,22 @@ export const NoteView = () => {
             </Grid>
 
             <Grid item>
-                <Button color='primary' sx={{padding: 2}}>
+                <input
+                    type="file"
+                    multiple
+                    onChange={onFileInputChange}
+                    style={{display:'none'}}
+                    ref={fileInputRef}
+                />
+
+                <IconButton 
+                color='primary' 
+                disabled={isSaving}
+                onClick={() => fileInputRef.current.click()}>
+                    <UploadOutlined />
+                </IconButton>
+
+                <Button color='primary' sx={{padding: 2}} onClick={onSaveNote} disabled={ isSaving }>
                     <SaveOutlined sx={{ fontSize: 30, mr: 1}}/>
                     Guardar
                 </Button>
@@ -62,7 +115,7 @@ export const NoteView = () => {
                 />
             </Grid>
 
-            <ImageGallery />
+            <ImageGallery images={note.imageUrls}/>
 
         </Grid>
   )
