@@ -1,6 +1,6 @@
 import { FirebaseDB } from "../../firebase/config";
-import { setDoc, collection, doc } from "firebase/firestore/lite";
-import { savingNewNote, addNewEmptyNote, setActiveNote, setNotes, setSaving, updateNote, setPhotosToActiveNote } from "./journalSlice";
+import { setDoc, collection, doc, deleteDoc } from "firebase/firestore/lite";
+import { savingNewNote, addNewEmptyNote, setActiveNote, setNotes, setSaving, updateNote, setPhotosToActiveNote, deleteNoteById } from "./journalSlice";
 import { fileUpload, loadNotes } from "../../helpers";
 
 export const startNewNote = () => {
@@ -70,5 +70,18 @@ export const startUploadingFiles = (files={}) => {
         const photosUrls = await Promise.all(fileUploadPromises); //with Promise.all it starts to create all the requests of all the images simultaneously
 
         dispatch( setPhotosToActiveNote(photosUrls) );
+    }
+}
+
+export const startdDeletingNote = () => {
+    return async(dispatch, getState) => {
+        const { uid } = getState().auth;
+        const { active:note } = getState().journal;
+
+        const docRef = doc(FirebaseDB, `${uid}/journal/notes/${note.id}`);
+
+        const res = await deleteDoc(docRef);
+
+        dispatch( deleteNoteById(note.id) );
     }
 }
